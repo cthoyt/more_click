@@ -3,7 +3,7 @@
 """Utilities for web applications."""
 
 import importlib
-from typing import Any, Mapping, Optional, TYPE_CHECKING, Union
+from typing import Any, Mapping, NoReturn, Optional, TYPE_CHECKING, Union
 
 import click
 
@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     'make_web_command',
+    'run_app',
     'make_gunicorn_app',
 ]
 
@@ -42,13 +43,32 @@ def make_web_command(
     @verbose_option
     def web(host: str, port: str, with_gunicorn: bool, workers: int):
         """Run the web application."""
-        if with_gunicorn:
-            gunicorn_app = make_gunicorn_app(app, host, port, workers)
-            gunicorn_app.run()
-        else:
-            app.run(host=host, port=port)
+        run_app(
+            app=app,
+            host=host,
+            port=port,
+            workers=workers,
+            with_gunicorn=with_gunicorn,
+        )
 
     return web
+
+
+def run_app(
+    app: 'flask.Flask',
+    with_gunicorn: bool,
+    host: Optional[str] = None,
+    port: Optional[str] = None,
+    workers: Optional[int] = None,
+) -> NoReturn:
+    """Run the application."""
+    if not with_gunicorn:
+        app.run(host=host, port=port)
+    elif host is None or port is None or workers is None:
+        raise ValueError('must specify host, port, and workers.')
+    else:
+        gunicorn_app = make_gunicorn_app(app, host, port, workers)
+        gunicorn_app.run()
 
 
 def make_gunicorn_app(
