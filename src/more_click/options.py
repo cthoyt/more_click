@@ -11,6 +11,7 @@ __all__ = [
     'verbose_option',
     'host_option',
     'port_option',
+    'with_gunicorn_option',
     'workers_option',
 ]
 
