@@ -30,11 +30,6 @@ def make_web_command(
     if group is None:
         group = click
 
-    if isinstance(app, str):
-        package_name, class_name = app.split(':')
-        package = importlib.import_module(package_name)
-        app = getattr(package, class_name)
-
     @group.command(**(command_kwargs or {}))
     @host_option
     @port_option
@@ -43,6 +38,12 @@ def make_web_command(
     @verbose_option
     def web(host: str, port: str, with_gunicorn: bool, workers: int):
         """Run the web application."""
+        nonlocal app
+        if isinstance(app, str):
+            package_name, class_name = app.split(':')
+            package = importlib.import_module(package_name)
+            app = getattr(package, class_name)
+
         run_app(
             app=app,
             host=host,
