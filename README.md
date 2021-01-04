@@ -39,7 +39,6 @@ from more_click import host_option, port_option
 
 
 @click.command()
-@click.option()
 @host_option
 @port_option
 def web(host: str, port: str):
@@ -61,7 +60,6 @@ from more_click import host_option, port_option, with_gunicorn_option, workers_o
 
 
 @click.command()
-@click.option()
 @host_option
 @port_option
 @with_gunicorn_option
