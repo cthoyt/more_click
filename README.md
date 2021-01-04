@@ -37,12 +37,17 @@ import click
 from more_click import host_option, port_option
 
 
+@click.command()
 @click.option()
 @host_option
 @port_option
 def web(host: str, port: str):
     from .wsgi import app  # modify to point to your module-level flask.Flask instance
     app.run(host=host, port=port)
+
+
+if __name__ == '__main__':
+    web()
 ```
 
 However, sometimes I want to make it possible to run via `gunicorn` from the CLI, so I would use the following
@@ -53,6 +58,7 @@ import click
 from more_click import host_option, port_option, with_gunicorn_option, workers_option, run_app
 
 
+@click.command()
 @click.option()
 @host_option
 @port_option
@@ -61,6 +67,39 @@ from more_click import host_option, port_option, with_gunicorn_option, workers_o
 def web(host: str, port: str, with_gunicorn: bool, workers: int):
     from .wsgi import app  # modify to point to your module-level flask.Flask instance
     run_app(app=app, with_gunicorn=with_gunicorn, host=host, port=port, workers=workers)
+
+
+if __name__ == '__main__':
+    web()
 ```
 
+For ultimate lazy mode, I've written a wrapper around the second:
 
+```python
+from more_click import make_web_command
+
+web = make_web_command('myapp.wsgi:app')
+
+if __name__ == '__main__':
+    web()
+```
+
+This uses a standard `wsgi`-style string to locate the app, since you don't want to be eagerly importing the app in your
+CLI since it might rely on optional dependencies like Flask. If your CLI has other stuff, you can include the web
+command in a group like:
+
+```python
+import click
+from more_click import make_web_command
+
+
+@click.group()
+def main():
+    """My awesome CLI."""
+
+
+make_web_command('myapp.wsgi:app', group=main)
+
+if __name__ == '__main__':
+    main()
+```
