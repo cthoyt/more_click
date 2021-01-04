@@ -33,6 +33,7 @@ In many packages, I've included a Flask web application in `wsgi.py`. I usually 
 file to import the web application and keep it insulated from other package-related usages:
 
 ```python
+# cli.py
 import click
 from more_click import host_option, port_option
 
@@ -54,6 +55,7 @@ However, sometimes I want to make it possible to run via `gunicorn` from the CLI
 extensions to automatically determine if it should be run with Flask's development server or gunicorn.
 
 ```python
+# cli.py
 import click
 from more_click import host_option, port_option, with_gunicorn_option, workers_option, run_app
 
@@ -76,6 +78,7 @@ if __name__ == '__main__':
 For ultimate lazy mode, I've written a wrapper around the second:
 
 ```python
+# cli.py
 from more_click import make_web_command
 
 web = make_web_command('my_package_name.wsgi:app')
