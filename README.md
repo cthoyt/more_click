@@ -78,7 +78,7 @@ For ultimate lazy mode, I've written a wrapper around the second:
 ```python
 from more_click import make_web_command
 
-web = make_web_command('myapp.wsgi:app')
+web = make_web_command('my_package_name.wsgi:app')
 
 if __name__ == '__main__':
     web()
@@ -98,7 +98,7 @@ def main():
     """My awesome CLI."""
 
 
-make_web_command('myapp.wsgi:app', group=main)
+make_web_command('my_package_name.wsgi:app', group=main)
 
 if __name__ == '__main__':
     main()
