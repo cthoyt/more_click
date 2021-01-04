@@ -90,6 +90,7 @@ CLI since it might rely on optional dependencies like Flask. If your CLI has oth
 command in a group like:
 
 ```python
+# cli.py
 import click
 from more_click import make_web_command
 
