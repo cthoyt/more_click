@@ -13,6 +13,7 @@ __all__ = [
     'port_option',
     'with_gunicorn_option',
     'workers_option',
+    'force_option',
 ]
 
 LOG_FMT = '%(asctime)s %(levelname)-8s %(message)s'
@@ -45,4 +46,10 @@ def _number_of_workers() -> int:
 host_option = click.option('--host', type=str, default='0.0.0.0', help='Flask host.', show_default=True)
 port_option = click.option('--port', type=int, default=5000, help='Flask port.', show_default=True)
 with_gunicorn_option = click.option('--with-gunicorn', is_flag=True, help='Use gunicorn instead of flask dev server')
-workers_option = click.option('--workers', type=int, default=_number_of_workers(), help='Number of workers (when using --with-gunicorn)')
+workers_option = click.option(
+    '--workers',
+    type=int,
+    default=_number_of_workers(),
+    help='Number of workers (when using --with-gunicorn)',
+)
+force_option = click.option('-f', '--force', is_flag=True)
