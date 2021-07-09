@@ -14,6 +14,7 @@ __all__ = [
     'with_gunicorn_option',
     'workers_option',
     'force_option',
+    'debug_option',
 ]
 
 LOG_FMT = '%(asctime)s %(levelname)-8s %(message)s'
@@ -53,3 +54,4 @@ workers_option = click.option(
     help='Number of workers (when using --with-gunicorn)',
 )
 force_option = click.option('-f', '--force', is_flag=True)
+debug_option = click.option('--debug', is_flag=True)

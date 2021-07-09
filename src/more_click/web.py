@@ -7,7 +7,7 @@ from typing import Any, Mapping, NoReturn, Optional, TYPE_CHECKING, Union
 
 import click
 
-from .options import host_option, port_option, verbose_option, with_gunicorn_option, workers_option
+from .options import debug_option, host_option, port_option, verbose_option, with_gunicorn_option, workers_option
 
 if TYPE_CHECKING:
     import flask  # noqa
@@ -36,7 +36,8 @@ def make_web_command(
     @with_gunicorn_option
     @workers_option
     @verbose_option
-    def web(host: str, port: str, with_gunicorn: bool, workers: int):
+    @debug_option
+    def web(host: str, port: str, with_gunicorn: bool, workers: int, debug: bool):
         """Run the web application."""
         nonlocal app
         if isinstance(app, str):
@@ -50,6 +51,7 @@ def make_web_command(
             port=port,
             workers=workers,
             with_gunicorn=with_gunicorn,
+            debug=debug,
         )
 
     return web
@@ -61,12 +63,15 @@ def run_app(
     host: Optional[str] = None,
     port: Optional[str] = None,
     workers: Optional[int] = None,
+    debug: bool = False,
 ) -> NoReturn:
     """Run the application."""
     if not with_gunicorn:
-        app.run(host=host, port=port)
+        app.run(host=host, port=port, debug=debug)
     elif host is None or port is None or workers is None:
         raise ValueError('must specify host, port, and workers.')
+    elif debug:
+        raise ValueError('can not use debug=True with with_gunicorn=True')
     else:
         gunicorn_app = make_gunicorn_app(app, host, port, workers)
         gunicorn_app.run()
