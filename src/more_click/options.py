@@ -4,6 +4,8 @@
 
 import logging
 import multiprocessing
+from typing import Union
+from operator import itemgetter
 
 import click
 
@@ -15,6 +17,7 @@ __all__ = [
     'workers_option',
     'force_option',
     'debug_option',
+    'log_level_option',
 ]
 
 LOG_FMT = '%(asctime)s %(levelname)-8s %(message)s'
@@ -55,3 +58,14 @@ workers_option = click.option(
 )
 force_option = click.option('-f', '--force', is_flag=True)
 debug_option = click.option('--debug', is_flag=True)
+
+# sorted level names, by log-level
+_level_names = sorted(logging._nameToLevel, key=logging._nameToLevel.get)
+
+def log_level_option(default: Union[str, int] = logging.INFO):
+    """Create a click option to select a log-level by name."""
+    # normalize default to be a string
+    if isinstance(default, int):
+        default = logging.getLevelName(level=default)
+
+    return click.option("-ll", "--log-level", type=click.Choice(choices=_level_names, case_sensitive=False), default=default)
