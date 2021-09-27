@@ -4,6 +4,7 @@
 
 import logging
 import multiprocessing
+from typing import Union
 
 import click
 
@@ -15,6 +16,7 @@ __all__ = [
     'workers_option',
     'force_option',
     'debug_option',
+    'log_level_option',
 ]
 
 LOG_FMT = '%(asctime)s %(levelname)-8s %(message)s'
@@ -55,3 +57,7 @@ workers_option = click.option(
 )
 force_option = click.option('-f', '--force', is_flag=True)
 debug_option = click.option('--debug', is_flag=True)
+
+_level_names = sorted(logging._nameToLevel.keys())
+def log_level_option(default: Union[str, int] = logging.INFO):
+    return click.option("-ll", "--log-level", type=click.Choice(choices=_level_names, case_sensitive=False), default=default)
