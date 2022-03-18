@@ -3,7 +3,7 @@
 """Utilities for web applications."""
 
 import importlib
-from typing import Any, Mapping, NoReturn, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Mapping, NoReturn, Optional, Union
 
 import click
 
@@ -14,14 +14,14 @@ if TYPE_CHECKING:
     import gunicorn.app.base  # noqa
 
 __all__ = [
-    'make_web_command',
-    'run_app',
-    'make_gunicorn_app',
+    "make_web_command",
+    "run_app",
+    "make_gunicorn_app",
 ]
 
 
 def make_web_command(
-    app: Union[str, 'flask.Flask'],
+    app: Union[str, "flask.Flask"],
     *,
     group: Optional[click.Group] = None,
     command_kwargs: Optional[Mapping[str, Any]] = None,
@@ -35,17 +35,17 @@ def make_web_command(
         default_port = int(default_port)
 
     @group.command(**(command_kwargs or {}))
-    @click.option('--host', type=str, default=default_host or '0.0.0.0', help='Flask host.', show_default=True)
-    @click.option('--port', type=int, default=default_port or 5000, help='Flask port.', show_default=True)
+    @click.option("--host", type=str, default=default_host or "0.0.0.0", help="Flask host.", show_default=True)
+    @click.option("--port", type=int, default=default_port or 5000, help="Flask port.", show_default=True)
     @with_gunicorn_option
     @workers_option
     @verbose_option
-    @click.option('--debug', is_flag=True, help="Run flask dev server in debug mode (when not using --with-gunicorn)")
+    @click.option("--debug", is_flag=True, help="Run flask dev server in debug mode (when not using --with-gunicorn)")
     def web(host: str, port: str, with_gunicorn: bool, workers: int, debug: bool):
         """Run the web application."""
         nonlocal app
         if isinstance(app, str):
-            package_name, class_name = app.split(':')
+            package_name, class_name = app.split(":")
             package = importlib.import_module(package_name)
             app = getattr(package, class_name)
 
@@ -62,7 +62,7 @@ def make_web_command(
 
 
 def run_app(
-    app: 'flask.Flask',
+    app: "flask.Flask",
     with_gunicorn: bool,
     host: Optional[str] = None,
     port: Optional[str] = None,
@@ -73,21 +73,21 @@ def run_app(
     if not with_gunicorn:
         app.run(host=host, port=port, debug=debug)
     elif host is None or port is None or workers is None:
-        raise ValueError('must specify host, port, and workers.')
+        raise ValueError("must specify host, port, and workers.")
     elif debug:
-        raise ValueError('can not use debug=True with with_gunicorn=True')
+        raise ValueError("can not use debug=True with with_gunicorn=True")
     else:
         gunicorn_app = make_gunicorn_app(app, host, port, workers)
         gunicorn_app.run()
 
 
 def make_gunicorn_app(
-    app: 'flask.Flask',
+    app: "flask.Flask",
     host: str,
     port: str,
     workers: int,
     **kwargs,
-) -> 'gunicorn.app.base.BaseApplication':
+) -> "gunicorn.app.base.BaseApplication":
     """Make a GUnicorn App."""
     from gunicorn.app.base import BaseApplication
 
@@ -108,9 +108,11 @@ def make_gunicorn_app(
         def load(self):
             return self.application
 
-    kwargs.update({
-        'bind': f'{host}:{port}',
-        'workers': workers,
-    })
+    kwargs.update(
+        {
+            "bind": f"{host}:{port}",
+            "workers": workers,
+        }
+    )
 
     return StandaloneApplication(kwargs)

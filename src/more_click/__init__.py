@@ -2,5 +2,5 @@
 
 """More click."""
 
-from .options import *
-from .web import *
+from .options import *  # noqa:F401,F403
+from .web import *  # noqa:F401,F403
