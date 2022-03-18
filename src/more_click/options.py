@@ -54,6 +54,7 @@ workers_option = click.option(
     '--workers',
     type=int,
     default=_number_of_workers(),
+    show_default=True,
     help='Number of workers (when using --with-gunicorn)',
 )
 force_option = click.option('-f', '--force', is_flag=True)
@@ -61,6 +62,7 @@ debug_option = click.option('--debug', is_flag=True)
 
 # sorted level names, by log-level
 _level_names = sorted(logging._nameToLevel, key=logging._nameToLevel.get)
+
 
 def log_level_option(default: Union[str, int] = logging.INFO):
     """Create a click option to select a log-level by name."""
