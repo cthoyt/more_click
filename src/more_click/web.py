@@ -7,7 +7,7 @@ from typing import Any, Mapping, NoReturn, Optional, TYPE_CHECKING, Union
 
 import click
 
-from .options import debug_option, host_option, port_option, verbose_option, with_gunicorn_option, workers_option
+from .options import verbose_option, with_gunicorn_option, workers_option
 
 if TYPE_CHECKING:
     import flask  # noqa
@@ -25,18 +25,22 @@ def make_web_command(
     *,
     group: Optional[click.Group] = None,
     command_kwargs: Optional[Mapping[str, Any]] = None,
+    default_port: Union[None, str, int] = None,
+    default_host: Optional[str] = None,
 ) -> click.Command:
-    """Make a command for running a web application"""
+    """Make a command for running a web application."""
     if group is None:
         group = click
+    if isinstance(default_port, str):
+        default_port = int(default_port)
 
     @group.command(**(command_kwargs or {}))
-    @host_option
-    @port_option
+    @click.option('--host', type=str, default=default_host or '0.0.0.0', help='Flask host.', show_default=True)
+    @click.option('--port', type=int, default=default_port or 5000, help='Flask port.', show_default=True)
     @with_gunicorn_option
     @workers_option
     @verbose_option
-    @debug_option
+    @click.option('--debug', is_flag=True, help="Run flask dev server in debug mode (when not using --with-gunicorn)")
     def web(host: str, port: str, with_gunicorn: bool, workers: int, debug: bool):
         """Run the web application."""
         nonlocal app
