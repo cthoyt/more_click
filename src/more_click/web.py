@@ -40,8 +40,9 @@ def make_web_command(
     @with_gunicorn_option
     @workers_option
     @verbose_option
+    @click.option("--timeout", type=int, help="The timeout used for gunicorn")
     @click.option("--debug", is_flag=True, help="Run flask dev server in debug mode (when not using --with-gunicorn)")
-    def web(host: str, port: str, with_gunicorn: bool, workers: int, debug: bool):
+    def web(host: str, port: str, with_gunicorn: bool, workers: int, debug: bool, timeout: Optional[int]):
         """Run the web application."""
         nonlocal app
         if isinstance(app, str):
@@ -56,6 +57,7 @@ def make_web_command(
             workers=workers,
             with_gunicorn=with_gunicorn,
             debug=debug,
+            timeout=timeout,
         )
 
     return web
@@ -67,6 +69,7 @@ def run_app(
     host: Optional[str] = None,
     port: Optional[str] = None,
     workers: Optional[int] = None,
+    timeout: Optional[int] = None,
     debug: bool = False,
 ) -> NoReturn:
     """Run the application."""
@@ -77,7 +80,13 @@ def run_app(
     elif debug:
         raise ValueError("can not use debug=True with with_gunicorn=True")
     else:
-        gunicorn_app = make_gunicorn_app(app, host, port, workers)
+        gunicorn_app = make_gunicorn_app(
+            app,
+            host=host,
+            port=port,
+            workers=workers,
+            timeout=timeout,
+        )
         gunicorn_app.run()
 
 
@@ -86,6 +95,7 @@ def make_gunicorn_app(
     host: str,
     port: str,
     workers: int,
+    timeout: Optional[int] = None,
     **kwargs,
 ) -> "gunicorn.app.base.BaseApplication":
     """Make a GUnicorn App."""
@@ -114,5 +124,7 @@ def make_gunicorn_app(
             "workers": workers,
         }
     )
+    if timeout is not None:
+        kwargs["timeout"] = timeout
 
     return StandaloneApplication(kwargs)
