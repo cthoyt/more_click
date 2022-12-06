@@ -1,0 +1,10 @@
+graft src
+graft tests
+
+global-exclude *.py[cod] __pycache__ *.so *.dylib .DS_Store *.gpickle
+
+prune tests/.pytest_cache
+
+exclude .bumpversion.cfg tox.ini
+include LICENSE README.md
+
