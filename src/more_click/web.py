@@ -4,7 +4,7 @@
 
 import importlib
 import sys
-from typing import TYPE_CHECKING, Any, Callable, Mapping, NoReturn, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Union
 
 import click
 
@@ -110,7 +110,7 @@ def run_app(
     workers: Optional[int] = None,
     timeout: Optional[int] = None,
     debug: bool = False,
-) -> NoReturn:
+):
     """Run the application."""
     if not with_gunicorn:
         app.run(host=host, port=port, debug=debug)
