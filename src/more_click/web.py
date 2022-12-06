@@ -60,7 +60,12 @@ def make_web_command(
 
         nonlocal app
         if isinstance(app, str):
-            package_name, class_name = app.split(":")
+            if app.count(":") != 1:
+                raise ValueError(
+                    "there should be exactly one colon in the string pointing to"
+                    " an app like modulename.submodulename:appname_in_module"
+                )
+            package_name, class_name = app.split(":", 1)
             package = importlib.import_module(package_name)
             app = getattr(package, class_name)
             if isinstance(app, flask.Flask):
