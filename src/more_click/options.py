@@ -61,7 +61,7 @@ force_option = click.option("-f", "--force", is_flag=True)
 debug_option = click.option("--debug", is_flag=True)
 
 # sorted level names, by log-level
-_level_names = sorted(logging._nameToLevel, key=logging._nameToLevel.get)
+_level_names = sorted(logging._nameToLevel, key=logging._nameToLevel.get)  # type: ignore
 
 
 def log_level_option(default: Union[str, int] = logging.INFO):
@@ -71,5 +71,8 @@ def log_level_option(default: Union[str, int] = logging.INFO):
         default = logging.getLevelName(level=default)
 
     return click.option(
-        "-ll", "--log-level", type=click.Choice(choices=_level_names, case_sensitive=False), default=default
+        "-ll",
+        "--log-level",
+        type=click.Choice(choices=_level_names, case_sensitive=False),
+        default=default,
     )

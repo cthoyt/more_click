@@ -3,7 +3,8 @@
 """Utilities for web applications."""
 
 import importlib
-from typing import TYPE_CHECKING, Any, Mapping, NoReturn, Optional, Union
+import sys
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Union
 
 import click
 
@@ -21,7 +22,7 @@ __all__ = [
 
 
 def make_web_command(
-    app: Union[str, "flask.Flask"],
+    app: Union[str, "flask.Flask", Callable[[], "flask.Flask"]],
     *,
     group: Optional[click.Group] = None,
     command_kwargs: Optional[Mapping[str, Any]] = None,
@@ -41,14 +42,57 @@ def make_web_command(
     @workers_option
     @verbose_option
     @click.option("--timeout", type=int, help="The timeout used for gunicorn")
-    @click.option("--debug", is_flag=True, help="Run flask dev server in debug mode (when not using --with-gunicorn)")
-    def web(host: str, port: str, with_gunicorn: bool, workers: int, debug: bool, timeout: Optional[int]):
+    @click.option(
+        "--debug",
+        is_flag=True,
+        help="Run flask dev server in debug mode (when not using --with-gunicorn)",
+    )
+    def web(
+        host: str,
+        port: str,
+        with_gunicorn: bool,
+        workers: int,
+        debug: bool,
+        timeout: Optional[int],
+    ):
         """Run the web application."""
+        import flask
+
         nonlocal app
         if isinstance(app, str):
-            package_name, class_name = app.split(":")
+            if app.count(":") != 1:
+                raise ValueError(
+                    "there should be exactly one colon in the string pointing to"
+                    " an app like modulename.submodulename:appname_in_module"
+                )
+            package_name, class_name = app.split(":", 1)
             package = importlib.import_module(package_name)
             app = getattr(package, class_name)
+            if isinstance(app, flask.Flask):
+                pass
+            elif callable(app):
+                app = app()
+            else:
+                raise TypeError(
+                    "when using a string path with more_click.make_web_command(),"
+                    " it's required that it points to either an instance of a Flask"
+                    " application or a 0-argument function that returns one."
+                )
+        elif isinstance(app, flask.Flask):
+            pass
+        elif callable(app):
+            app = app()
+        else:
+            raise TypeError(
+                "when using more_click.make_web_command(), the app argument should either"
+                " be an instance of a Flask app, a 0-argument function that returns a Flask app,"
+                " a string pointing to a Flask app in a python module, or a string pointing to a"
+                " 0-argument function that returns a Flask app"
+            )
+
+        if debug and with_gunicorn:
+            click.secho("can not use --debug and --with-gunicorn together")
+            return sys.exit(1)
 
         run_app(
             app=app,
@@ -71,7 +115,7 @@ def run_app(
     workers: Optional[int] = None,
     timeout: Optional[int] = None,
     debug: bool = False,
-) -> NoReturn:
+):
     """Run the application."""
     if not with_gunicorn:
         app.run(host=host, port=port, debug=debug)
