@@ -4,8 +4,7 @@
 
 import importlib
 import sys
-from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Iterable, Mapping, NoReturn, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Mapping, NoReturn, Optional, Union
 
 import click
 
@@ -48,7 +47,6 @@ def make_web_command(
         is_flag=True,
         help="Run flask dev server in debug mode (when not using --with-gunicorn)",
     )
-    @click.option("--config")
     def web(
         host: str,
         port: str,
@@ -65,12 +63,27 @@ def make_web_command(
             package_name, class_name = app.split(":")
             package = importlib.import_module(package_name)
             app = getattr(package, class_name)
+            if isinstance(app, flask.Flask):
+                pass
+            elif callable(app):
+                app = app()
+            else:
+                raise TypeError(
+                    "when using a string path with more_click.make_web_command(),"
+                    " it's required that it points to either an instance of a Flask"
+                    " application or a 0-argument function that returns one."
+                )
         elif isinstance(app, flask.Flask):
             pass
         elif callable(app):
             app = app()
         else:
-            raise TypeError
+            raise TypeError(
+                "when using more_click.make_web_command(), the app argument should either"
+                " be an instance of a Flask app, a 0-argument function that returns a Flask app,"
+                " a string pointing to a Flask app in a python module, or a string pointing to a"
+                " 0-argument function that returns a Flask app"
+            )
 
         if debug and with_gunicorn:
             click.secho("can not use --debug and --with-gunicorn together")
