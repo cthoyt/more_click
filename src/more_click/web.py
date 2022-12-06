@@ -3,7 +3,9 @@
 """Utilities for web applications."""
 
 import importlib
-from typing import TYPE_CHECKING, Any, Mapping, NoReturn, Optional, Union
+import sys
+from functools import wraps
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Mapping, NoReturn, Optional, Union
 
 import click
 
@@ -21,7 +23,7 @@ __all__ = [
 
 
 def make_web_command(
-    app: Union[str, "flask.Flask"],
+    app: Union[str, "flask.Flask", Callable[[], "flask.Flask"]],
     *,
     group: Optional[click.Group] = None,
     command_kwargs: Optional[Mapping[str, Any]] = None,
@@ -41,14 +43,38 @@ def make_web_command(
     @workers_option
     @verbose_option
     @click.option("--timeout", type=int, help="The timeout used for gunicorn")
-    @click.option("--debug", is_flag=True, help="Run flask dev server in debug mode (when not using --with-gunicorn)")
-    def web(host: str, port: str, with_gunicorn: bool, workers: int, debug: bool, timeout: Optional[int]):
+    @click.option(
+        "--debug",
+        is_flag=True,
+        help="Run flask dev server in debug mode (when not using --with-gunicorn)",
+    )
+    @click.option("--config")
+    def web(
+        host: str,
+        port: str,
+        with_gunicorn: bool,
+        workers: int,
+        debug: bool,
+        timeout: Optional[int],
+    ):
         """Run the web application."""
+        import flask
+
         nonlocal app
         if isinstance(app, str):
             package_name, class_name = app.split(":")
             package = importlib.import_module(package_name)
             app = getattr(package, class_name)
+        elif isinstance(app, flask.Flask):
+            pass
+        elif callable(app):
+            app = app()
+        else:
+            raise TypeError
+
+        if debug and with_gunicorn:
+            click.secho("can not use --debug and --with-gunicorn together")
+            return sys.exit(1)
 
         run_app(
             app=app,

@@ -71,5 +71,8 @@ def log_level_option(default: Union[str, int] = logging.INFO):
         default = logging.getLevelName(level=default)
 
     return click.option(
-        "-ll", "--log-level", type=click.Choice(choices=_level_names, case_sensitive=False), default=default
+        "-ll",
+        "--log-level",
+        type=click.Choice(choices=_level_names, case_sensitive=False),
+        default=default,
     )
