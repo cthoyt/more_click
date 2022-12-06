@@ -17,6 +17,8 @@ __all__ = [
     "force_option",
     "debug_option",
     "log_level_option",
+    "flask_debug_option",
+    "gunicorn_timeout_option",
 ]
 
 LOG_FMT = "%(asctime)s %(levelname)-8s %(message)s"
