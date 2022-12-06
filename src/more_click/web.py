@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Union
 
 import click
 
-from .options import verbose_option, with_gunicorn_option, workers_option
+from .options import flask_debug_option, gunicorn_timeout_option, verbose_option, with_gunicorn_option, workers_option
 
 if TYPE_CHECKING:
     import flask  # noqa
@@ -41,12 +41,8 @@ def make_web_command(
     @with_gunicorn_option
     @workers_option
     @verbose_option
-    @click.option("--timeout", type=int, help="The timeout used for gunicorn")
-    @click.option(
-        "--debug",
-        is_flag=True,
-        help="Run flask dev server in debug mode (when not using --with-gunicorn)",
-    )
+    @gunicorn_timeout_option
+    @flask_debug_option
     def web(
         host: str,
         port: str,

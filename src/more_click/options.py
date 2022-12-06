@@ -59,6 +59,12 @@ workers_option = click.option(
 )
 force_option = click.option("-f", "--force", is_flag=True)
 debug_option = click.option("--debug", is_flag=True)
+flask_debug_option = click.option(
+    "--debug",
+    is_flag=True,
+    help="Run flask dev server in debug mode (when not using --with-gunicorn)",
+)
+gunicorn_timeout_option = click.option("--timeout", type=int, help="The timeout used for gunicorn")
 
 # sorted level names, by log-level
 _level_names = sorted(logging._nameToLevel, key=logging._nameToLevel.get)  # type: ignore
