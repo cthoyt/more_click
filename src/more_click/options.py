@@ -13,6 +13,7 @@ __all__ = [
     "host_option",
     "port_option",
     "with_gunicorn_option",
+    "with_uvicorn_option",
     "workers_option",
     "force_option",
     "debug_option",
@@ -52,6 +53,7 @@ def _number_of_workers() -> int:
 host_option = click.option("--host", type=str, default="0.0.0.0", help="Flask host.", show_default=True)
 port_option = click.option("--port", type=int, default=5000, help="Flask port.", show_default=True)
 with_gunicorn_option = click.option("--with-gunicorn", is_flag=True, help="Use gunicorn instead of flask dev server")
+with_uvicorn_option = click.option("--with-uvicorn", is_flag=True, help="Use uvicorn instead of flask dev server")
 workers_option = click.option(
     "--workers",
     type=int,

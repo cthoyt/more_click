@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Union
 
 import click
 
-from .options import flask_debug_option, gunicorn_timeout_option, verbose_option, with_gunicorn_option, workers_option
+from .options import flask_debug_option, gunicorn_timeout_option, verbose_option, with_gunicorn_option, workers_option,with_uvicorn_option
 
 if TYPE_CHECKING:
     import flask  # noqa
@@ -39,6 +39,7 @@ def make_web_command(
     @click.option("--host", type=str, default=default_host or "0.0.0.0", help="Flask host.", show_default=True)
     @click.option("--port", type=int, default=default_port or 5000, help="Flask port.", show_default=True)
     @with_gunicorn_option
+    @with_uvicorn_option
     @workers_option
     @verbose_option
     @gunicorn_timeout_option
@@ -47,6 +48,7 @@ def make_web_command(
         host: str,
         port: str,
         with_gunicorn: bool,
+        with_uvicorn: bool,
         workers: int,
         debug: bool,
         timeout: Optional[int],
@@ -96,6 +98,7 @@ def make_web_command(
             port=port,
             workers=workers,
             with_gunicorn=with_gunicorn,
+            with_uvicorn=with_uvicorn,
             debug=debug,
             timeout=timeout,
         )
@@ -105,21 +108,20 @@ def make_web_command(
 
 def run_app(
     app: "flask.Flask",
-    with_gunicorn: bool,
+    with_gunicorn: bool = False,
+    with_uvicorn: bool = False,
     host: Optional[str] = None,
-    port: Optional[str] = None,
+    port: Union[None, int, str] = None,
     workers: Optional[int] = None,
     timeout: Optional[int] = None,
     debug: bool = False,
 ):
     """Run the application."""
-    if not with_gunicorn:
-        app.run(host=host, port=port, debug=debug)
-    elif host is None or port is None or workers is None:
-        raise ValueError("must specify host, port, and workers.")
-    elif debug:
-        raise ValueError("can not use debug=True with with_gunicorn=True")
-    else:
+    if with_gunicorn:
+        if host is None or port is None or workers is None:
+            raise ValueError("must specify host, port, and workers.")
+        if debug:
+            raise ValueError("can not use debug=True with with_gunicorn=True")
         gunicorn_app = make_gunicorn_app(
             app,
             host=host,
@@ -128,12 +130,23 @@ def run_app(
             timeout=timeout,
         )
         gunicorn_app.run()
+    elif with_uvicorn:
+        if host is None or port is None or workers is None:
+            raise ValueError("must specify host and port for uvicorn.")
+        if debug:
+            raise ValueError("can not use debug=True with with_uvicorn=True")
+
+        import uvicorn
+
+        uvicorn.run(app, host=host, port=int(port), log_level="info")
+    else:
+        app.run(host=host, port=port, debug=debug)
 
 
 def make_gunicorn_app(
     app: "flask.Flask",
     host: str,
-    port: str,
+    port: Union[str, int],
     workers: int,
     timeout: Optional[int] = None,
     **kwargs,
